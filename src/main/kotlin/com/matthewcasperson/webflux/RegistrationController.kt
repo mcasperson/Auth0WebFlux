@@ -10,7 +10,7 @@ class RegistrationController {
 
     @GetMapping("/")
     fun findAll(): Flux<Car> =
-        Flux.fromStream<Car>(getCars().asStream())
+        Flux.fromStream(getCars().asStream())
 
     fun getCars(): Sequence<Car> = sequence {
         while (true) {
