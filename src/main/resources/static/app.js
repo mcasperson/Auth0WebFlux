@@ -60,7 +60,7 @@ client.connect().subscribe({
                     subscription.request(1);
                 })
 
-                document.getElementById("rego").innerText = value.data.rego;
+                document.getElementById("rego").innerText = "Registration Number: " + value.data.rego;
             },
             // Nothing happens until `request(n)` is called
             onSubscribe: sub => {
