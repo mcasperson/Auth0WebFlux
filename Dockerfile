@@ -1,4 +1,4 @@
-FROM adoptopenjdk:16-jdk AS BUILD_IMAGE
+FROM adoptopenjdk:11-jdk AS BUILD_IMAGE
 RUN apt-get update && apt-get install npm -y
 ENV APP_HOME=/auth0webflux
 WORKDIR $APP_HOME
@@ -8,7 +8,7 @@ RUN npm install -g browserify
 RUN cd $APP_HOME/src/main/resources/static/; browserify index.js > app.js
 RUN ./gradlew --no-daemon build
 
-FROM adoptopenjdk:16-jre
+FROM adoptopenjdk:11-jre
 WORKDIR /root/
 COPY --from=BUILD_IMAGE /auth0webflux/build/libs/webflux-0.0.1-SNAPSHOT.jar .
 EXPOSE 8080
