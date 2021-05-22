@@ -1,14 +1,18 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const {
     RSocketClient,
-    JsonSerializers,
+    JsonSerializer,
+    IdentitySerializer
 } = require('rsocket-core');
 const RSocketWebSocketClient = require('rsocket-websocket-client').default;
 
 // Create an instance of a client
 const client = new RSocketClient({
     // send/receive objects instead of strings/buffers
-    serializers: JsonSerializers,
+    serializers: {
+        data: JsonSerializer,
+        metadata: IdentitySerializer
+    },
     setup: {
         // ms btw sending keepalive to server
         keepAlive: 60000,
@@ -17,17 +21,17 @@ const client = new RSocketClient({
         // format of `data`
         dataMimeType: 'application/json',
         // format of `metadata`
-        metadataMimeType: 'application/json',
+        metadataMimeType: 'message/x.rsocket.routing.v0',
     },
-    transport: new RSocketWebSocketClient({url: 'wss://localhost:7000'}),
+    transport: new RSocketWebSocketClient({url: 'ws://localhost:8080/rsocket'}),
 });
 
 // Open the connection
 client.connect().subscribe({
     onComplete: socket => {
         socket.requestStream({
-            data: { message: "request - stream from javascript!" },
-            metadata: ""
+            data: null,
+            metadata: String.fromCharCode("cars".length) + "cars"
         })
         .subscribe({
             onComplete: () => console.log("requestStream done"),
@@ -36,13 +40,13 @@ client.connect().subscribe({
                 console.error(error);
             },
             onNext: value => {
-                // console.log("got next value in requestStream..");
+                console.log("got next value in requestStream..");
                 console.log(value.data);
             },
             // Nothing happens until `request(n)` is called
             onSubscribe: sub => {
                 console.log("subscribe request Stream!");
-                sub.request(7);
+                sub.request(1000000);
             }
         });
     },

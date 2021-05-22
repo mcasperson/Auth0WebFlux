@@ -27,14 +27,14 @@ class CarRegoRestController(private val carRegoService: CarRegoService) {
 
 	@GetMapping(value = ["/cars"],
 		produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-	fun prices() = carRegoService.streamOfCars()
+	fun cars() = carRegoService.streamOfCars()
 }
 
 @Controller
 class CarRegoRSocketController(private val carRegoService: CarRegoService) {
 
 	@MessageMapping("cars")
-	fun cars(symbol: String) = carRegoService.streamOfCars()
+	fun cars() = carRegoService.streamOfCars()
 }
 
 @Service
@@ -44,7 +44,10 @@ class CarRegoService {
 	fun streamOfCars(): Flux<Car> {
 		return Flux
 			.interval(ofSeconds(1))
-			.map { Car(RandomStringUtils.random(6), "image" + Random.nextInt(0, 5) + ".png") }
+			.map {
+				println("Sending car details")
+				Car(RandomStringUtils.randomAlphabetic(6), "image" + Random.nextInt(0, 5) + ".png")
+			}
 			.doOnSubscribe { log.info("New subscription") }
 			.share()
 	}
