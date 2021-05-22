@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install npm -y
 ENV APP_HOME=/auth0webflux
 WORKDIR $APP_HOME
 COPY . .
-RUN cd $APP_HOME/src/main/resources/static/; RUN npm install
+RUN cd $APP_HOME/src/main/resources/static/; npm install
 RUN ./gradlew --no-daemon build
 
 FROM adoptopenjdk:16-jre
