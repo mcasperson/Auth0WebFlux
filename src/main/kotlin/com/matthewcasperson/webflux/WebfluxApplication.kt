@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import java.time.Duration.ofSeconds
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
 @SpringBootApplication
@@ -44,10 +43,9 @@ class CarRegoService {
 	fun streamOfCars(): Flux<Car> {
 		return Flux
 			.interval(ofSeconds(1))
-			.map {
-				println("Sending car details")
-				Car(RandomStringUtils.randomAlphabetic(6), "image" + Random.nextInt(0, 5) + ".png")
-			}
+			.map { Car(
+				RandomStringUtils.randomAlphabetic(6),
+				"image" + Random.nextInt(0, 5) + ".png") }
 			.doOnSubscribe { log.info("New subscription") }
 			.share()
 	}
