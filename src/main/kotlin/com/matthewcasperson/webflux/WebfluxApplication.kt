@@ -31,9 +31,9 @@ class CarRegoService {
 
 	fun streamOfCars(): Flux<Car> {
 		return Flux
-			.interval(ofSeconds(1))
+			.interval(ofSeconds(3))
 			.map { Car(
-				RandomStringUtils.randomAlphabetic(6),
+				RandomStringUtils.randomAlphabetic(6).toUpperCase(),
 				"image" + Random.nextInt(1, 5) + ".png") }
 			.doOnSubscribe { log.info("New subscription") }
 			.share()
