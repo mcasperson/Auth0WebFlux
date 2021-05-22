@@ -4,6 +4,8 @@ ENV APP_HOME=/auth0webflux
 WORKDIR $APP_HOME
 COPY . .
 RUN cd $APP_HOME/src/main/resources/static/; npm install
+RUN npm install -g browserify
+RUN cd $APP_HOME/src/main/resources/static/; browserify index.js > app.js
 RUN ./gradlew --no-daemon build
 
 FROM adoptopenjdk:16-jre
