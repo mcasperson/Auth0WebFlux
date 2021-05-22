@@ -1,91 +1,54 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const {
     RSocketClient,
-        JsonSerializer,
-        IdentitySerializer
+    JsonSerializers,
 } = require('rsocket-core');
 const RSocketWebSocketClient = require('rsocket-websocket-client').default;
-var client = undefined;
 
-function addErrorMessage(prefix, error) {
-    var ul = document.getElementById("messages");
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(prefix + error));
-    ul.appendChild(li);
-}
+// Create an instance of a client
+const client = new RSocketClient({
+    // send/receive objects instead of strings/buffers
+    serializers: JsonSerializers,
+    setup: {
+        // ms btw sending keepalive to server
+        keepAlive: 60000,
+        // ms timeout if no keepalive response
+        lifetime: 180000,
+        // format of `data`
+        dataMimeType: 'application/json',
+        // format of `metadata`
+        metadataMimeType: 'application/json',
+    },
+    transport: new RSocketWebSocketClient({url: 'wss://localhost:7000'}),
+});
 
-function addMessage(message) {
-    var ul = document.getElementById("messages");
-
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(JSON.stringify(message)));
-    ul.appendChild(li);
-}
-
-function main() {
-    if (client !== undefined) {
-        client.close();
-        document.getElementById("messages").innerHTML = "";
-    }
-
-    // Create an instance of a client
-    client = new RSocketClient({
-        serializers: {
-            data: JsonSerializer,
-            metadata: IdentitySerializer
-        },
-        setup: {
-            // ms btw sending keepalive to server
-            keepAlive: 60000,
-            // ms timeout if no keepalive response
-            lifetime: 180000,
-            // format of `data`
-            dataMimeType: 'application/json',
-            // format of `metadata`
-            metadataMimeType: 'message/x.rsocket.routing.v0',
-        },
-        transport: new RSocketWebSocketClient({
-            url: 'ws://localhost:8080/tweetsocket'
-        }),
-    });
-
-    // Open the connection
-    client.connect().subscribe({
-        onComplete: socket => {
-            // socket provides the rsocket interactions fire/forget, request/response,
-            // request/stream, etc as well as methods to close the socket.
-            socket.requestStream({
-                data: {
-                    'author': document.getElementById("author-filter").value
-                },
-                metadata: String.fromCharCode('tweets.by.author'.length) + 'tweets.by.author',
-            }).subscribe({
-                onComplete: () => console.log('complete'),
-                onError: error => {
-                    console.log(error);
-                    addErrorMessage("Connection has been closed due to ", error);
-                },
-                onNext: payload => {
-                    console.log(payload.data);
-                    addMessage(payload.data);
-                },
-                onSubscribe: subscription => {
-                    subscription.request(2147483647);
-                },
-            });
-        },
-        onError: error => {
-            console.log(error);
-            addErrorMessage("Connection has been refused due to ", error);
-        },
-        onSubscribe: cancel => {
-            /* call cancel() to abort */
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', main);
-document.getElementById('author-filter').addEventListener('change', main);
+// Open the connection
+client.connect().subscribe({
+    onComplete: socket => {
+        socket.requestStream({
+            data: { message: "request - stream from javascript!" },
+            metadata: ""
+        })
+        .subscribe({
+            onComplete: () => console.log("requestStream done"),
+            onError: error => {
+                console.log("got error with requestStream");
+                console.error(error);
+            },
+            onNext: value => {
+                // console.log("got next value in requestStream..");
+                console.log(value.data);
+            },
+            // Nothing happens until `request(n)` is called
+            onSubscribe: sub => {
+                console.log("subscribe request Stream!");
+                sub.request(7);
+            }
+        });
+    },
+    onError: error => console.error(error),
+    onSubscribe: cancel => {/* call cancel() to abort */}
+});
 },{"rsocket-core":19,"rsocket-websocket-client":31}],2:[function(require,module,exports){
 "use strict";
 
