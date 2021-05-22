@@ -1,5 +1,5 @@
 FROM adoptopenjdk:16-jdk AS BUILD_IMAGE
-RUN apt-get update && apt-get install npm
+RUN apt-get update && apt-get install npm -y
 ENV APP_HOME=/auth0webflux
 WORKDIR $APP_HOME
 COPY . .
