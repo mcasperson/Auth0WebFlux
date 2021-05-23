@@ -3,6 +3,7 @@ const {
     JsonSerializer,
     IdentitySerializer
 } = require('rsocket-core');
+const RSocketWebSocketClient = require('rsocket-websocket-client').default;
 
 const toDataURL = url => fetch(url)
     .then(response => response.blob())
@@ -12,8 +13,6 @@ const toDataURL = url => fetch(url)
         reader.onerror = reject
         reader.readAsDataURL(blob)
     }))
-
-const RSocketWebSocketClient = require('rsocket-websocket-client').default;
 
 // Create an instance of a client
 const client = new RSocketClient({
@@ -39,6 +38,8 @@ var subscription = null;
 
 // Open the connection
 client.connect().subscribe({
+    onError: error => console.error(error),
+    onSubscribe: cancel => {/* call cancel() to abort */},
     onComplete: socket => {
         socket.requestStream({
             data: null,
@@ -53,13 +54,11 @@ client.connect().subscribe({
             onNext: value => {
                 console.log("got next value in requestStream..");
                 console.log(value.data);
-
+                document.getElementById("rego").innerText = "Registration Number: " + value.data.rego;
                 toDataURL("images/" + value.data.image).then(dataUrl => {
                     document.getElementById("image").src = dataUrl;
                     subscription.request(1);
                 })
-
-                document.getElementById("rego").innerText = "Registration Number: " + value.data.rego;
             },
             // Nothing happens until `request(n)` is called
             onSubscribe: sub => {
@@ -68,7 +67,5 @@ client.connect().subscribe({
                 subscription.request(1);
             }
         });
-    },
-    onError: error => console.error(error),
-    onSubscribe: cancel => {/* call cancel() to abort */}
+    }
 });
