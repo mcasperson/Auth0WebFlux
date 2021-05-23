@@ -1,12 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
 	id("org.springframework.boot") version "2.4.5"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
 	kotlin("jvm") version "1.4.32"
 	kotlin("plugin.spring") version "1.4.32"
-	id("com.github.johnrengelman.shadow") version "2.0.4"
 }
 
 group = "com.matthewcasperson"
@@ -39,7 +37,4 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-tasks.withType<ShadowJar> {
 }
